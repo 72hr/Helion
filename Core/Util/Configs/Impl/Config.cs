@@ -107,7 +107,12 @@ public class Config : IConfig
 
     public bool TryGetComponent(string name, [NotNullWhen(true)] out ConfigComponent? component)
     {
-        return Components.TryGetValue(name, out component);
+        if (Components.TryGetValue(name, out component))
+            return true;
+        component = Components.FirstOrDefault(x => x.Value.Attribute.ConsoleAlias == name).Value;
+        if (component != null)
+            return true;
+        return false;
     }
 
     public void ApplyQueuedChanges(ConfigSetFlags setFlags)

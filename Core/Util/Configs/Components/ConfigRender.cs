@@ -56,7 +56,7 @@ public class ConfigRender
         };
     });
 
-    [ConfigInfo("Field of view.")]
+    [ConfigInfo("Field of view.", consoleAlias: "fov")]
     [OptionMenu(OptionSectionType.Render, "Field Of View")]
     public readonly ConfigValue<double> FieldOfView = new(90, Clamp(60.0, 120.0));
 

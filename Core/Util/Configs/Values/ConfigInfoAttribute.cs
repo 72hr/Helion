@@ -6,12 +6,13 @@ namespace Helion.Util.Configs.Values;
 /// Metadata for a config component or value.
 /// </summary>
 [AttributeUsage(AttributeTargets.Field)]
-public class ConfigInfoAttribute : Attribute
+public class ConfigInfoAttribute(string description, bool save = true, bool serialize = false, bool demo = false, bool mapRestartRequired = false,
+    bool restartRequired = false, bool legacy = false, string? consoleAlias = null) : Attribute
 {
     /// <summary>
     /// A high level description of the attribute.
     /// </summary>
-    public readonly string Description;
+    public readonly string Description = description;
 
     /// <summary>
     /// If true, saves to the config. If false, never saves.
@@ -21,35 +22,25 @@ public class ConfigInfoAttribute : Attribute
     /// be toggled via the console, but will never be saved. Upon loading
     /// the game again, it will always have the default definition.
     /// </remarks>
-    public readonly bool Save;
+    public readonly bool Save = save;
 
     /// <summary>
     /// If true, serializes to the world state (save games).
     /// </summary>
-    public readonly bool Serialize;
+    public readonly bool Serialize = serialize;
 
     // If true this option is serialized for demos.
-    public readonly bool Demo;
+    public readonly bool Demo = demo;
 
     // If the map needs to be restarted to take effect.
-    public readonly bool MapRestartRequired;
+    public readonly bool MapRestartRequired = mapRestartRequired;
 
     // If the application needs to be restarted to take effect.
-    public readonly bool RestartRequired;
+    public readonly bool RestartRequired = restartRequired;
 
-    public readonly bool Legacy;
+    public readonly bool Legacy = legacy;
 
-    public ConfigInfoAttribute(string description, bool save = true, bool serialize = false, bool demo = false, bool mapRestartRequired = false, 
-        bool restartRequired = false, bool legacy = false)
-    {
-        Description = description;
-        Save = save;
-        Serialize = serialize;
-        Demo = demo;
-        MapRestartRequired = mapRestartRequired;
-        RestartRequired = restartRequired;
-        Legacy = legacy;
-    }
+    public readonly string? ConsoleAlias = consoleAlias;
 
     public bool GetSetWarningString(out string message)
     {

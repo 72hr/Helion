@@ -201,7 +201,7 @@ public partial class ConsoleLayer
                 if (component.Attribute.Legacy)
                     continue;
 
-                if (path.EqualsIgnoreCase(input))
+                if (path.EqualsIgnoreCase(input) || component.Attribute.ConsoleAlias?.EqualsIgnoreCase(input) == true)
                 {
                     foundAtLeastOne = true;
                     EmitMessage((Color.SaddleBrown, component.Attribute.Description));
@@ -220,6 +220,11 @@ public partial class ConsoleLayer
                 {
                     foundAtLeastOne = true;
                     EmitMessage((Color.Chocolate, $"  {path}"));
+                }
+                else if (component.Attribute.ConsoleAlias?.StartsWith(input, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    foundAtLeastOne = true;
+                    EmitMessage((Color.Chocolate, $"  {component.Attribute.ConsoleAlias}"));
                 }
             }
         }
