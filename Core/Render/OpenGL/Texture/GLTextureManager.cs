@@ -331,7 +331,7 @@ public abstract class GLTextureManager<GLTextureType> : IRendererTextureManager
         m_disposed = true;
     }
 
-    protected abstract GLTextureType GenerateTexture(Image image, string name, ResourceNamespace resourceNamespace, TextureFlags flags = TextureFlags.Default);
+    protected abstract GLTextureType GenerateTexture(Image image, string name, ResourceNamespace resourceNamespace, TextureFlags flags = TextureFlags.Default, FilterType? filterOverride = null);
 
     protected abstract GLFontTexture<GLTextureType> GenerateFont(Font font, string name);
 

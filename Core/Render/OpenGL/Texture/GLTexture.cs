@@ -27,9 +27,10 @@ public abstract class GLTexture : IRenderableTextureHandle, IDisposable
     public int Height => Dimension.Height;
 
     public int BlankRowsFromBottom;
+    public readonly FilterType? FilterOverride = null;
 
     protected GLTexture(int textureId, string name, Dimension dimension, Vec2I offset, ResourceNamespace ns, TextureTarget target, 
-        int transparentPixelCount, int blankRowsFromBottom)
+        int transparentPixelCount, int blankRowsFromBottom, FilterType? filterOverride = null)
     {
         TextureId = textureId;
         Name = name;
@@ -40,6 +41,7 @@ public abstract class GLTexture : IRenderableTextureHandle, IDisposable
         Target = target;
         TransparentPixelCount = transparentPixelCount;
         BlankRowsFromBottom = blankRowsFromBottom;
+        FilterOverride = filterOverride;
     }
 
     ~GLTexture()

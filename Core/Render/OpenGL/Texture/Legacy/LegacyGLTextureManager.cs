@@ -51,7 +51,7 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
         foreach (GLLegacyTexture texture in m_registeredTextures)
         {
             texture.Bind();
-            SetTextureFilter(texture.Target);
+            SetTextureFilter(texture.Target, texture.FilterOverride);
             texture.Unbind();
         }
     }
@@ -66,7 +66,7 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
             foreach (var texture in tracker.GetValues(key))
             {
                 texture.Bind();
-                SetTextureFilter(texture.Target);
+                SetTextureFilter(texture.Target, texture.FilterOverride);
                 texture.Unbind();
             }
         }
@@ -118,7 +118,7 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
         }
 
         GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-        SetTextureParameters(TextureTarget.Texture2D, resourceNamespace, flags);
+        SetTextureParameters(TextureTarget.Texture2D, resourceNamespace, flags, texture.FilterOverride);
 
         GL.BindTexture(texture.Target, 0);
         texture.Flags = flags;
@@ -133,10 +133,10 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
     /// </param>
     /// <returns>A new texture.</returns>
     protected override GLLegacyTexture GenerateTexture(Image image, string name,
-        ResourceNamespace resourceNamespace, TextureFlags flags = TextureFlags.Default)
+        ResourceNamespace resourceNamespace, TextureFlags flags = TextureFlags.Default, FilterType? filterOverride = null)
     {
         int textureId = GL.GenTexture();
-        GLLegacyTexture texture = new(textureId, name, image.Dimension, image.Offset, image.Namespace, TextureTarget.Texture2D, image.TransparentPixelCount(), image.BlankRowsFromBottom);
+        GLLegacyTexture texture = new(textureId, name, image.Dimension, image.Offset, image.Namespace, TextureTarget.Texture2D, image.TransparentPixelCount(), image.BlankRowsFromBottom, filterOverride: filterOverride);
         UploadAndSetParameters(texture, image, name, resourceNamespace, flags);
 
         return texture;
@@ -150,13 +150,15 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
     /// <returns>A newly allocated font texture.</returns>
     protected override GLFontTexture<GLLegacyTexture> GenerateFont(Font font, string name)
     {
-        GLLegacyTexture texture = GenerateTexture(font.Image, $"[FONT] {name}", ResourceNamespace.Fonts, TextureFlags.ClampX | TextureFlags.ClampY);
+        FilterType? filterOverride = font.IsTrueTypeFont ? FilterType.Trilinear : null;
+        GLLegacyTexture texture = GenerateTexture(font.Image, $"[FONT] {name}", ResourceNamespace.Fonts,
+            TextureFlags.ClampX | TextureFlags.ClampY, filterOverride: filterOverride);
         GLFontTexture<GLLegacyTexture> fontTexture = new(texture, font);
         TextureTrackerClamp.Insert(name, ResourceNamespace.Fonts, texture);
         return fontTexture;
     }
 
-    private void SetTextureParameters(TextureTarget targetType, ResourceNamespace resourceNamespace, TextureFlags flags)
+    private void SetTextureParameters(TextureTarget targetType, ResourceNamespace resourceNamespace, TextureFlags flags, FilterType? filterOverride = null)
     {
         if (resourceNamespace != ResourceNamespace.Sprites && resourceNamespace != ResourceNamespace.Graphics)
         {
@@ -165,7 +167,7 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
             GL.TexParameter(targetType, TextureParameterName.TextureWrapS, (int)textureWrapS);
             GL.TexParameter(targetType, TextureParameterName.TextureWrapT, (int)textureWrapT);
 
-            SetTextureFilter(targetType);
+            SetTextureFilter(targetType, filterOverride);
             SetAnisotropicFiltering(targetType);
             return;
         }
@@ -182,13 +184,13 @@ public class LegacyGLTextureManager : GLTextureManager<GLLegacyTexture>
         }
         else
         {
-            SetTextureFilter(targetType);
+            SetTextureFilter(targetType, filterOverride);
         }
     }
 
-    public void SetTextureFilter(TextureTarget targetType)
+    public void SetTextureFilter(TextureTarget targetType, FilterType? filterOverride = null)
     {
-        (int minFilter, int maxFilter) = FindFilterValues(Config.Render.Filter.Texture.Value);
+        (int minFilter, int maxFilter) = FindFilterValues(filterOverride ?? Config.Render.Filter.Texture.Value);
         GL.TexParameter(targetType, TextureParameterName.TextureMinFilter, minFilter);
         GL.TexParameter(targetType, TextureParameterName.TextureMagFilter, maxFilter);
     }
