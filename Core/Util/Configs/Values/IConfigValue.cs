@@ -48,6 +48,11 @@ public interface IConfigValue
     ConfigSetResult Set(object newValue, bool writeToConfig = true);
 
     /// <summary>
+    /// Attempts to parse a new value without setting it.
+    /// </summary>
+    bool TryParseNewObjectValue(object newValue, out object? parsedValue);
+
+    /// <summary>
     /// Applies the queued changes, if any.
     /// </summary>
     /// <param name="flagType">The mask which must be present. This requires all

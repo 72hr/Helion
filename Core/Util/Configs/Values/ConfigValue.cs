@@ -118,6 +118,27 @@ public class ConfigValue<T> : IConfigValue where T : notnull
         return result;
     }
 
+    public bool TryParseNewObjectValue(object newValue, out object? parsedValue)
+    {
+        try
+        {
+            parsedValue = ObjectToTypeConverterOrThrow(newValue);
+            return true;
+        }
+        catch
+        {
+            parsedValue = null;
+            return false;
+        }
+    }
+
+    public bool TryParseNewValue(object newValue, out T? parsedValue)
+    {
+        bool successful = TryParseNewObjectValue(newValue, out object? parsedObjectValue);
+        parsedValue = (T?)parsedObjectValue;
+        return successful;
+    }
+
     public void ResetToUserValue()
     {
         Value = UserValue;

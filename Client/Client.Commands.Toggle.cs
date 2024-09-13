@@ -1,11 +1,62 @@
-﻿using Helion.Util.Consoles.Commands;
+﻿using Helion.Util.Configs.Components;
+using Helion.Util.Configs.Values;
+using Helion.Util.Consoles.Commands;
 using Helion.Util.Consoles;
+using Helion.Util.Loggers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Helion.Client;
 
 public partial class Client
 {
+    /// <summary>
+    /// Cycles a config item's value through the provided values (optional if boolean)
+    /// </summary>
+    [ConsoleCommand("toggle", "Toggles a config item")]
+    private void Toggle(ConsoleCommandEventArgs args)
+    {
+        string? configItem = args.Args.FirstOrDefault();
+        if (configItem == null)
+        {
+            HelionLog.Error("Config item not provided");
+            return;
+        }
+        if (!m_config.TryGetComponent(configItem, out ConfigComponent? component))
+        {
+            HelionLog.Error($"Config item {configItem} not found");
+            return;
+        }
+
+        // if boolean, allow toggling without providing values
+        if (args.Args.Count == 1)
+        {
+            if (component.Value is ConfigValue<bool> boolConfigVal)
+                TryHandleConfigVariableCommand(new ConsoleCommandEventArgs($"{configItem} {!boolConfigVal.Value}"));
+            else
+            {
+                HelionLog.Error($"Must provide values for {configItem}, since it is not a True/False config item");
+                return;
+            }
+        }
+        else
+        {
+            List<object> parsedValues = [];
+            foreach (string arg in args.Args[1..])
+            {
+                if (!component.Value.TryParseNewObjectValue(arg, out object? parsedVal) || parsedVal == null)
+                {
+                    HelionLog.Error($"Invalid value {arg} provided for {configItem}");
+                    return;
+                }
+                parsedValues.Add(parsedVal);
+            }
+            int nextIndex = (parsedValues.IndexOf(component.Value.ObjectValue) + 1) % parsedValues.Count;
+            TryHandleConfigVariableCommand(new ConsoleCommandEventArgs($"{configItem} {parsedValues[nextIndex]}"));
+        }
+    }
+
     [ConsoleCommand("mouselook", "Toggle mouselook")]
     private void ToggleMouselook(ConsoleCommandEventArgs args)
     {
